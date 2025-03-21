@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { hashPassword, createToken, setAuthCookie } from "@/lib/auth"
+import { validateEmail, validatePassword } from "@/lib/validators"
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,6 +11,16 @@ export async function POST(request: NextRequest) {
     // Validate input
     if (!name || !email || !password || !hostel || !roomNumber || !whatsappNumber) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    }
+
+    // Validate email format
+    if (!validateEmail(email)) {
+      return NextResponse.json({ error: "Invalid email format" }, { status: 400 })
+    }
+
+    // Validate password strength (e.g., at least 8 characters, one number, one special character)
+    if (!validatePassword(password)) {
+      return NextResponse.json({ error: "Password does not meet the required strength" }, { status: 400 })
     }
 
     // Check if user already exists
@@ -55,4 +66,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
   }
 }
-
