@@ -50,7 +50,7 @@ export default function AuthPage() {
     setIsLoading(true)
 
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("app/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: loginEmail, password: loginPassword }),
@@ -87,7 +87,7 @@ export default function AuthPage() {
     try {
       const selectedHostel = showOtherHostel ? otherHostel : hostel
 
-      const response = await fetch("/api/auth/register", {
+      const response = await fetch("app/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -109,7 +109,7 @@ export default function AuthPage() {
       // Add the new hostel if it's not in the list
       if (showOtherHostel) {
         try {
-          await fetch("/api/hostels", {
+          await fetch("app/api/hostels", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name: otherHostel }),
