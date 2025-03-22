@@ -4,13 +4,14 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Filter, Search, MessageCircle, MapPin } from "lucide-react"
+import { Filter, Search, MessageCircle, MapPin, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useToast } from "@/components/ui/use-toast"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 // List of hostels
 const HOSTELS = ["All Hostels", "KP-1", "KP-1A", "KP-12", "KP-6", "KP-5", "KP-51", "QC-4", "QC-3"]
@@ -32,6 +33,7 @@ export default function ProductsPage() {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true)
   const [products, setProducts] = useState([])
+  const [error, setError] = useState<string | null>(null)
 
   const [selectedHostel, setSelectedHostel] = useState("All Hostels")
   const [selectedCategory, setSelectedCategory] = useState("all")
@@ -44,6 +46,7 @@ export default function ProductsPage() {
 
   const fetchProducts = async () => {
     setIsLoading(true)
+    setError(null)
 
     try {
       const params = new URLSearchParams()
@@ -65,16 +68,18 @@ export default function ProductsPage() {
       const response = await fetch(`/api/products?${params.toString()}`)
 
       if (!response.ok) {
-        throw new Error("Failed to fetch products")
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || "Failed to fetch products")
       }
 
       const data = await response.json()
       setProducts(data)
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching products:", error)
+      setError(error.message || "Failed to load products")
       toast({
         title: "Error",
-        description: "Failed to load products",
+        description: error.message || "Failed to load products",
         variant: "destructive",
       })
     } finally {
@@ -96,6 +101,14 @@ export default function ProductsPage() {
             <Link href="/products/sell">Sell an Item</Link>
           </Button>
         </div>
+
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}. Please try again later or contact support.</AlertDescription>
+          </Alert>
+        )}
 
         {/* Search and Filter */}
         <div className="flex flex-col gap-4 p-4 mb-8 bg-white rounded-lg shadow md:flex-row">
@@ -204,7 +217,18 @@ export default function ProductsPage() {
                             variant="ghost"
                             size="sm"
                             className="p-1 h-auto"
-                            onClick={() => window.open(`https://wa.me/${product.seller.whatsappNumber}`, "_blank")}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              if (product.seller?.whatsappNumber) {
+                                window.open(`https://wa.me/${product.seller.whatsappNumber}`, "_blank")
+                              } else {
+                                toast({
+                                  title: "Contact Error",
+                                  description: "Seller contact information not available",
+                                  variant: "destructive",
+                                })
+                              }
+                            }}
                           >
                             <MessageCircle className="w-4 h-4 text-green-600" />
                           </Button>
