@@ -16,7 +16,7 @@ export default function Home() {
           </p>
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             <Button asChild size="lg" className="bg-white text-blue-700 hover:bg-white/90">
-              <Link href="#browse">
+              <Link href="/products">
                 Browse Items <ShoppingBag className="w-4 h-4 ml-2" />
               </Link>
             </Button>
@@ -34,49 +34,6 @@ export default function Home() {
         </div>
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
           <ArrowRight className="w-8 h-8 text-white rotate-90" />
-        </div>
-      </section>
-
-      {/* Product Listings */}
-      <section id="browse" className="w-full px-4 py-16 bg-gray-50">
-        <div className="container mx-auto">
-          <h2 className="mb-8 text-3xl font-bold text-center">Recently Listed Items</h2>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="overflow-hidden transition-shadow bg-white rounded-lg shadow-md hover:shadow-lg"
-              >
-                <img
-                  src={product.image || "/placeholder.svg"}
-                  alt={product.name}
-                  className="object-cover w-full h-48"
-                />
-                <div className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold">{product.name}</h3>
-                      <p className="text-sm text-gray-500">{product.category}</p>
-                    </div>
-                    <div className="px-2 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-full">
-                      {product.hostel}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between mt-4">
-                    <span className="text-xl font-bold">₹{product.price}</span>
-                    <Button size="sm">View Details</Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-center mt-8">
-            <Button asChild variant="outline">
-              <Link href="/products">
-                View All Products <ArrowRight className="w-4 h-4 ml-2" />
-              </Link>
-            </Button>
-          </div>
         </div>
       </section>
 
@@ -117,40 +74,4 @@ export default function Home() {
     </div>
   )
 }
-
-// Sample product data
-const products = [
-  {
-    id: 1,
-    name: "Textbooks Bundle",
-    category: "Books",
-    price: 1200,
-    hostel: "KP-6",
-    image: "/placeholder.svg?height=200&width=300",
-  },
-  {
-    id: 2,
-    name: "Study Desk",
-    category: "Furniture",
-    price: 2500,
-    hostel: "KP-1",
-    image: "/placeholder.svg?height=200&width=300",
-  },
-  {
-    id: 3,
-    name: "Bicycle",
-    category: "Transportation",
-    price: 3500,
-    hostel: "QC-4",
-    image: "/placeholder.svg?height=200&width=300",
-  },
-  {
-    id: 4,
-    name: "Scientific Calculator",
-    category: "Electronics",
-    price: 800,
-    hostel: "KP-12",
-    image: "/placeholder.svg?height=200&width=300",
-  },
-]
 
