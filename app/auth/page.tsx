@@ -5,13 +5,14 @@ import type React from "react"
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/components/ui/use-toast"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 // List of hostels
 const HOSTELS = ["KP-1", "KP-1A", "KP-12", "KP-6", "KP-5", "KP-51", "QC-4", "QC-3"]
@@ -25,6 +26,7 @@ export default function AuthPage() {
 
   const [activeTab, setActiveTab] = useState(defaultTab)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState("")
@@ -48,9 +50,10 @@ export default function AuthPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError(null)
 
     try {
-      const response = await fetch("app/api/auth/login", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: loginEmail, password: loginPassword }),
@@ -59,7 +62,7 @@ export default function AuthPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "Login failed")
+        throw new Error(data.error || "Login failed. Please check your credentials and try again.")
       }
 
       toast({
@@ -70,9 +73,11 @@ export default function AuthPage() {
       router.push(callbackUrl)
       router.refresh()
     } catch (error: any) {
+      console.error("Login error:", error)
+      setError(error.message || "Login failed. Please try again later.")
       toast({
         title: "Login failed",
-        description: error.message,
+        description: error.message || "Login failed. Please try again later.",
         variant: "destructive",
       })
     } finally {
@@ -83,11 +88,16 @@ export default function AuthPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError(null)
 
     try {
       const selectedHostel = showOtherHostel ? otherHostel : hostel
 
-      const response = await fetch("app/api/auth/register", {
+      if (!selectedHostel) {
+        throw new Error("Please select a hostel")
+      }
+
+      const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -103,13 +113,13 @@ export default function AuthPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "Registration failed")
+        throw new Error(data.error || "Registration failed. Please try again.")
       }
 
       // Add the new hostel if it's not in the list
       if (showOtherHostel) {
         try {
-          await fetch("app/api/hostels", {
+          await fetch("/api/hostels", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name: otherHostel }),
@@ -127,9 +137,11 @@ export default function AuthPage() {
       router.push(callbackUrl)
       router.refresh()
     } catch (error: any) {
+      console.error("Registration error:", error)
+      setError(error.message || "Registration failed. Please try again later.")
       toast({
         title: "Registration failed",
-        description: error.message,
+        description: error.message || "Registration failed. Please try again later.",
         variant: "destructive",
       })
     } finally {
@@ -149,6 +161,14 @@ export default function AuthPage() {
       <div className="flex flex-col items-center justify-center flex-1 px-4 py-12 bg-gray-50">
         <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-md">
           <h1 className="mb-6 text-2xl font-bold text-center">Welcome to Hostel Marketplace</h1>
+
+          {error && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
